@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OHM Fitness Email Signature Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Montserrat', Arial, sans-serif; background:#f9f9f9; padding:20px; color:#111; }
+    h2 { color:#111; margin-bottom: 8px; }
+    p  { margin-top: 0; }
+    label { display:block; margin-top:14px; font-weight:600; }
+    input { width: 100%; max-width: 360px; padding:10px; margin-top:6px; font-size:16px; border:1px solid #ccc; border-radius:4px; }
+    #preview { margin-top:24px; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); overflow-x:auto; }
+    table { font-family:'Montserrat', Arial, sans-serif; font-size:14px; color:#111; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; }
+    button { margin-top:18px; padding:10px 18px; background:#007BFF; border:none; color:#fff; border-radius:4px; cursor:pointer; font-size:16px; }
+    button.secondary { background:#444; }
+  </style>
+</head>
+<body>
+
+  <h2>OHM Fitness Email Signature Generator</h2>
+  <p>Enter your details below. The preview updates instantly. Copy it or download it as a file.</p>
+
+  <label>Full Name:
+    <input type="text" id="fullName" placeholder="[Full Name]">
+  </label>
+  <label>Job Title:
+    <input type="text" id="jobTitle" placeholder="[Job Title]">
+  </label>
+  <label>Studio Location (Optional):
+    <input type="text" id="location" placeholder="[City, State]">
+  </label>
+  <label>Phone Number:
+    <input type="tel" id="phone" placeholder="[Phone Number]">
+  </label>
+  <label>Email:
+    <input type="email" id="email" placeholder="[Email]">
+  </label>
+
+  <div id="preview">
+    <h3 style="margin-top:0;">Signature Preview</h3>
+    <div id="signatureBlock"></div>
+  </div>
+
+  <div class="btns">
+    <button onclick="copySignature()">Copy Signature</button>
+    <button class="secondary" onclick="downloadSignature()">Download as HTML</button>
+  </div>
+
+<script>
+// UPDATE THIS if you store the logo with a different name or folder:
+const SHAREPOINT_LOGO_URL = "https://ohmfitness.sharepoint.com/sites/marketing/SiteAssets/ohm-logo.png";
+
+function buildInnerSignature(values) {
+  const { name, title, location, phone, email } = values;
+  const titleLine = location ? `${title} - ${location}` : title;
+
+  return `
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Montserrat', Arial, sans-serif; font-size:14px; color:#111;">
+      <tr>
+        <td style="padding-right:15px;">
+          <img src="${SHAREPOINT_LOGO_URL}" alt="OHM Fitness Logo" width="70" style="display:block;">
+        </td>
+        <td style="padding-right:15px; border-right:1px solid #4AB3F4;">
+          <div style="line-height:1.6;">
+            <div style="font-weight:600;">${name}</div>
+            <div>${titleLine}</div>
+            <div>OHM Fitness</div>
+          </div>
+        </td>
+        <td style="padding-left:15px;">
+          <div style="line-height:1.6;">
+            <div>${phone}</div>
+            <div><a href="mailto:${email}" style="color:#111; text-decoration:none;">${email}</a></div>
+            <div><a href="https://www.ohmfitness.com" style="color:#111; text-decoration:none;">www.ohmfitness.com</a></div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+function buildSignatureHTML(values) {
+  const inner = buildInnerSignature(values);
+  return `
+    <!-- OHM Fitness — Email Signature with Top Blue Line Extended +125px -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Montserrat', Arial, sans-serif; font-size:14px; color:#111;">
+      <tr>
+        <td style="height:1px; line-height:1px; font-size:0; background:#4AB3F4;"></td>
+        <td style="width:125px; height:1px; line-height:1px; font-size:0; background:#4AB3F4;"></td>
+      </tr>
+      <tr>
+        <td colspan="2" style="height:12px; line-height:12px; font-size:0;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="vertical-align:top;">${inner}</td>
+        <td style="width:125px;">&nbsp;</td>
+      </tr>
+    </table>
+  `;
+}
+
+function getValues() {
+  return {
+    name: document.getElementById('fullName').value || '[Full Name]',
+    title: document.getElementById('jobTitle').value || '[Job Title]',
+    location: document.getElementById('location').value.trim(),
+    phone: document.getElementById('phone').value || '[Phone Number]',
+    email: document.getElementById('email').value || '[Email]'
+  };
+}
+
+function updateSignature() {
+  const html = buildSignatureHTML(getValues());
+  document.getElementById('signatureBlock').innerHTML = html;
+}
+
+function copySignature() {
+  const node = document.getElementById('signatureBlock');
+  const range = document.createRange();
+  range.selectNode(node);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  document.execCommand('copy');
+  alert('Signature copied! Paste it into your email settings.');
+}
+
+function downloadSignature() {
+  const values = getValues();
+  const inner = buildSignatureHTML(values);
+
+  const doc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${values.name} - OHM Signature</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>${inner}</body>
+</html>`;
+
+  const blob = new Blob([doc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = values.name.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '') || 'ohm_signature';
+  a.href = url;
+  a.download = safeName + '_signature.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('input', updateSignature);
+});
+
+// Initialize preview
+updateSignature();
+</script>
+
+</body>
+</html>
